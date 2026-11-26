@@ -386,6 +386,13 @@ ChatTheme::ChatTheme(ChatThemeDescriptor &&descriptor)
 : _key(descriptor.key)
 , _palette(std::make_unique<style::palette>()) {
 	descriptor.preparePalette(*_palette);
+	// [mod] Force a gradient on outgoing bubbles when the theme has none.
+	if (descriptor.bubblesData.colors.size() < 2) {
+		const auto modBase = descriptor.bubblesData.colors.empty()
+			? _palette->msgOutBg()->c
+			: descriptor.bubblesData.colors.front();
+		descriptor.bubblesData.colors = { modBase, modBase.darker(150) };
+	}
 	setBackground(PrepareBackgroundImage(descriptor.backgroundData));
 	setBubblesBackground(PrepareBubblesBackground(descriptor.bubblesData));
 	adjustPalette(descriptor);
