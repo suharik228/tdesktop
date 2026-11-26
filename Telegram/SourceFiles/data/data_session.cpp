@@ -3390,10 +3390,11 @@ void Session::processMessagesDeleted(
 			affected->unknownMessageDeleted(messageId.v);
 		}
 	}
-	if (!toDestroy.empty()) {
-		notifyItemsAboutToBeDestroyed(toDestroy);
-		for (const auto &item : toDestroy) {
-			item->destroy();
+	// [mod] Keep deleted messages, only mark them as deleted.
+	for (const auto &item : toDestroy) {
+		if (!item->isRemotelyDeleted()) {
+			item->markRemotelyDeleted();
+			requestItemViewRefresh(item);
 		}
 	}
 	for (const auto &history : historiesToCheck) {
@@ -3414,10 +3415,11 @@ void Session::processNonChannelMessagesDeleted(const QVector<MTPint> &data) {
 			historiesToCheck.emplace(history);
 		}
 	}
-	if (!toDestroy.empty()) {
-		notifyItemsAboutToBeDestroyed(toDestroy);
-		for (const auto &item : toDestroy) {
-			item->destroy();
+	// [mod] Keep deleted messages, only mark them as deleted.
+	for (const auto &item : toDestroy) {
+		if (!item->isRemotelyDeleted()) {
+			item->markRemotelyDeleted();
+			requestItemViewRefresh(item);
 		}
 	}
 	for (const auto &history : historiesToCheck) {
