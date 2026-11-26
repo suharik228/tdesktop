@@ -260,6 +260,13 @@ public:
 	[[nodiscard]] bool isPinned() const {
 		return _flags & MessageFlag::Pinned;
 	}
+	// [mod] Message was deleted by someone else, but kept locally.
+	[[nodiscard]] bool isRemotelyDeleted() const {
+		return _remotelyDeleted;
+	}
+	void markRemotelyDeleted() {
+		_remotelyDeleted = true;
+	}
 	[[nodiscard]] bool invertMedia() const {
 		return _flags & MessageFlag::InvertMedia;
 	}
@@ -836,6 +843,7 @@ private:
 	BusinessShortcutId _shortcutId = 0;
 	// Service-styled regular messages still accept ordinary content updates.
 	bool _isServiceMessage = false;
+	bool _remotelyDeleted = false; // [mod]
 
 	MessageGroupId _groupId = MessageGroupId();
 	EffectId _effectId = 0;
