@@ -2531,6 +2531,10 @@ void HistoryItem::applyEdition(HistoryMessageEdition &&edition) {
 	} else {
 		clearRichPage();
 	}
+	// [mod] Remember previous text of edited messages (from others).
+	auto modPreviousText = (!out() && !isService() && !_text.empty())
+		? _text
+		: TextWithEntities();
 	auto updatedText = edition.richPage
 		? Iv::FlattenRichPageSummary(edition.richPage)
 		: (mediaCheck == MediaCheckResult::Unsupported)
@@ -2552,7 +2556,18 @@ void HistoryItem::applyEdition(HistoryMessageEdition &&edition) {
 		setServiceText(std::move(serviceText));
 		addToSharedMediaIndex();
 	} else {
-		setText(std::move(updatedText));
+		// [mod] Keep the previous text visible above the edited one.
+		if (!modPreviousText.empty()
+			&& modPreviousText.text != updatedText.text) {
+			auto modMerged = std::move(modPreviousText);
+			modMerged.append(TextWithEntities{ u"\n"_q });
+			modMerged.append(
+				TextWithEntities{ tr::lng_mod_edited_mark(tr::now) + u"\n"_q });
+			modMerged.append(std::move(updatedText));
+			setText(std::move(modMerged));
+		} else {
+			setText(std::move(updatedText));
+		}
 		addToSharedMediaIndex();
 	}
 	if (!edition.useSameReplies) {
