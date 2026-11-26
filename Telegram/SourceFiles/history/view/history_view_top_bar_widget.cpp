@@ -2016,6 +2016,16 @@ void TopBarWidget::updateOnlineDisplay() {
 			text = channel->isMegagroup() ? tr::lng_group_status(tr::now) : tr::lng_channel_status(tr::now);
 		}
 	}
+	{ // [mod] Prepend peer id and @username to the status line.
+		auto modRawId = int64(0);
+		if (peerIsUser(peer->id)) modRawId = peerToUser(peer->id).bare;
+		else if (peerIsChannel(peer->id)) modRawId = peerToChannel(peer->id).bare;
+		else if (peerIsChat(peer->id)) modRawId = peerToChat(peer->id).bare;
+		auto modExtra = u"ID "_q + QString::number(modRawId);
+		const auto modName = peer->username();
+		if (!modName.isEmpty()) modExtra += u" | @"_q + modName;
+		text = text.isEmpty() ? modExtra : (modExtra + u" | "_q + text);
+	}
 	if (_titlePeerText.toString() != text) {
 		_titlePeerText.setText(st::dialogsTextStyle, text);
 		_titlePeerTextOnline = titlePeerTextOnline;
